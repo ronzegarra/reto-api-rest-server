@@ -43,7 +43,7 @@ app.get("*", (req, res) => {
 
 //MySQL details
 
-var mysqlConnection = mysql.createConnection({
+/*var mysqlConnection = mysql.createConnection({
   host: "us-cdbr-east-03.cleardb.com",
   user: "b5063a6dbe3597",
   password: "53b4c1f0",
@@ -61,7 +61,41 @@ let handleConnection =() => {
   }); 
 }
 
-handleConnection();
+handleConnection();*/
+
+let db_config ={
+  host: "us-cdbr-east-03.cleardb.com",
+  user: "b5063a6dbe3597",
+  password: "53b4c1f0",
+  database: "heroku_0ee0569291a560f",
+  port: 3306,
+  multipleStatements: true,
+}
+
+var connection;
+
+function handleDisconnect() {
+  connection = mysql.createConnection(db_config); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+  connection.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+  connection.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+}
+
+handleDisconnect();
+
 //Creating GET Router to fetch all the learner details from the MySQL Database
 app.get("/clients", (req, res) => {
   mysqlConnection.query("SELECT * FROM client", (err, rows, fields) => {
