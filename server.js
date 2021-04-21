@@ -33,37 +33,46 @@ app.use(
 app.use(bodyparser.json());
 
 
-const publicPath = path.join(__dirname, 'build');
+/*const publicPath = path.join(__dirname, 'build');
 
 app.use(express.static(publicPath));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(publicPath, "index.html"));
-});
+});*/
 
 //MySQL details
 
 var mysqlConnection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "12345",
-  database: "learners",
-  port: 3360,
+  host: "us-cdbr-east-03.cleardb.com",
+  user: "b5063a6dbe3597",
+  password: "53b4c1f0",
+  database: "heroku_0ee0569291a560f",
+  port: 3306,
   multipleStatements: true,
 });
 
-mysqlConnection.connect((err) => {
-  if (!err) console.log("Connection Established Successfully");
-  else console.log("Connection Failed!" + JSON.stringify(err, undefined, 2));
-});
 
+
+let handleConnection =() => {
+  mysqlConnection.connect((err) => {
+    if (!err) console.log("Connection Established Successfully");
+    else console.log("Connection Failed!" + JSON.stringify(err, undefined, 2));
+  }); 
+}
+
+handleConnection();
 //Creating GET Router to fetch all the learner details from the MySQL Database
-app.get("/learners", (req, res) => {
-  mysqlConnection.query("SELECT * FROM learnerdetails", (err, rows, fields) => {
+app.get("/clients", (req, res) => {
+  mysqlConnection.query("SELECT * FROM client", (err, rows, fields) => {
 
     console.log('ESTAS LLAMANDO')
+    
     if (!err) res.send(rows);
-    else console.log(err);
+    else {
+      handleConnection();
+      console.log(err);
+    }
   });
 });
 
