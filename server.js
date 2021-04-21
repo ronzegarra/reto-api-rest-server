@@ -32,7 +32,6 @@ app.use(
 
 app.use(bodyparser.json());
 
-
 /*const publicPath = path.join(__dirname, 'build');
 
 app.use(express.static(publicPath));
@@ -43,65 +42,48 @@ app.get("*", (req, res) => {
 
 //MySQL details
 
-/*var mysqlConnection = mysql.createConnection({
-  host: "us-cdbr-east-03.cleardb.com",
-  user: "b5063a6dbe3597",
-  password: "53b4c1f0",
-  database: "heroku_0ee0569291a560f",
-  port: 3306,
-  multipleStatements: true,
-});
-
-mysqlConnection.connect((err) => {
-  if (!err) console.log("Connection Established Successfully");
-  else console.log("Connection Failed!" + JSON.stringify(err, undefined, 2));
-});*/
-
 var connection;
 
 function handleDisconnect() {
-
-  var db_config = 
-    {
-      host: "us-cdbr-east-03.cleardb.com",
-      user: "b5063a6dbe3597",
-      password: "53b4c1f0",
-      database: "heroku_0ee0569291a560f",
-      port: 3306,
-      multipleStatements: true,
-    }
-  
+  var db_config = {
+    host: "us-cdbr-east-03.cleardb.com",
+    user: "b5063a6dbe3597",
+    password: "53b4c1f0",
+    database: "heroku_0ee0569291a560f",
+    port: 3306,
+    multipleStatements: true,
+  };
 
   connection = mysql.createConnection(db_config); // Recreate the connection, since
-                                                  // the old one cannot be reused.
-
-  connection.connect(function(err) {              // The server is either down
-    if(err) {                                     // or restarting (takes a while sometimes).
-      console.log('error when connecting to db:', err);
+  // the old one cannot be reused.
+  connection.connect(function (err) {
+    // The server is either down
+    if (err) {
+      // or restarting (takes a while sometimes).
+      console.log("error when connecting to db:", err);
       setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-    }                                     // to avoid a hot loop, and to allow our node script to
-  });                                     // process asynchronous requests in the meantime.
-                                          // If you're also serving http, display a 503 error.
-  connection.on('error', function(err) {
-    console.log('db error', err);
-    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-      handleDisconnect();                         // lost due to either server restart, or a
-    } else {                                      // connnection idle timeout (the wait_timeout
-      throw err;                                  // server variable configures this)
+    } // to avoid a hot loop, and to allow our node script to
+  }); // process asynchronous requests in the meantime.
+  // If you're also serving http, display a 503 error.
+  connection.on("error", function (err) {
+    console.log("db error", err);
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
+      // Connection to the MySQL server is usually
+      handleDisconnect(); // lost due to either server restart, or a
+    } else {
+      // connnection idle timeout (the wait_timeout
+      throw err; // server variable configures this)
     }
   });
 }
 
 handleDisconnect();
 
-
-
 //Creating GET Router to fetch all the learner details from the MySQL Database
 app.get("/clients", (req, res) => {
   connection.query("SELECT * FROM client", (err, rows, fields) => {
+    console.log("ESTAS LLAMANDO");
 
-    console.log('ESTAS LLAMANDO')
-    
     if (!err) res.send(rows);
     else console.log(err);
   });
@@ -114,7 +96,7 @@ FROM purchase;*/
 
 app.get("/kpideclientes", (req, res) => {
   mysqlConnection.query(
-    "SELECT AVG(course_Id) AS avg_age, STDDEV(course_Id) AS std_age  FROM learnerdetails",
+    "SELECT AVG(age) AS avg_age, STDDEV(age) AS std_age  FROM client",
     (err, rows, fields) => {
       if (!err) {
         console.log("ROWS----->>>", rows);
