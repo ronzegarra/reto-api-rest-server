@@ -95,7 +95,7 @@ app.get("/clients", (req, res) => {
 FROM purchase;*/
 
 app.get("/kpideclientes", (req, res) => {
-  mysqlConnection.query(
+  connection.query(
     "SELECT AVG(age) AS avg_age, STDDEV(age) AS std_age  FROM client",
     (err, rows, fields) => {
       if (!err) {
