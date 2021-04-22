@@ -81,6 +81,10 @@ handleDisconnect();
 
 //Creating GET Router to fetch all the learner details from the MySQL Database
 app.get("/clients", (req, res) => {
+  
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
   connection.query("SELECT * FROM client", (err, rows, fields) => {
     console.log("ESTAS LLAMANDO");
 
