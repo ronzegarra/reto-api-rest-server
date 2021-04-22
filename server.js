@@ -1,49 +1,14 @@
-/*const path = require("path");
-
-const express = require("express");
-
-const app = express();
-
-const port = process.env.PORT || 3000;
-
-const publicPath = path.join(__dirname, 'build');
-
-app.use(express.static(publicPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
-});
-*/
-
-const path = require("path");
-
 const mysql = require("mysql");
 const express = require("express");
-const bodyparser = require("body-parser");
+const bodyParser = require("body-parser");
 var app = express();
 const port = process.env.PORT || 3000;
-//Configuring express server
 
-app.use(
-  bodyparser.urlencoded({
-    extended: true,
-  })
-);
-
-app.use(bodyparser.json());
-
-/*const publicPath = path.join(__dirname, 'build');
-
-app.use(express.static(publicPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
-});*/
-
-//MySQL details
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 var connection;
-
+//Manage Connection
 function handleDisconnect() {
   var db_config = {
     host: "us-cdbr-east-03.cleardb.com",
@@ -54,34 +19,27 @@ function handleDisconnect() {
     multipleStatements: true,
   };
 
-  connection = mysql.createConnection(db_config); // Recreate the connection, since
-  // the old one cannot be reused.
+  connection = mysql.createConnection(db_config);
   connection.connect(function (err) {
-    // The server is either down
     if (err) {
-      // or restarting (takes a while sometimes).
       console.log("error when connecting to db:", err);
-      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-    } // to avoid a hot loop, and to allow our node script to
-  }); // process asynchronous requests in the meantime.
-  // If you're also serving http, display a 503 error.
+      setTimeout(handleDisconnect, 2000);
+    }
+  });
   connection.on("error", function (err) {
     console.log("db error", err);
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      // Connection to the MySQL server is usually
-      handleDisconnect(); // lost due to either server restart, or a
+      handleDisconnect();
     } else {
-      // connnection idle timeout (the wait_timeout
-      throw err; // server variable configures this)
+      throw err;
     }
   });
 }
 
 handleDisconnect();
 
-//Creating GET Router to fetch all the learner details from the MySQL Database
+//To Get Data from Clients
 app.get("/clients", (req, res) => {
-  
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
 
@@ -93,13 +51,8 @@ app.get("/clients", (req, res) => {
   });
 });
 
-//Router to GET specific learner detail from the MySQL database
-
-/*SELECT STDDEV(total_cost)             
-FROM purchase;*/
-
+//To Get Math Data from Clients
 app.get("/kpideclientes", (req, res) => {
-
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
 
@@ -107,50 +60,36 @@ app.get("/kpideclientes", (req, res) => {
     "SELECT AVG(age) AS avg_age, STDDEV(age) AS std_age  FROM client",
     (err, rows, fields) => {
       if (!err) {
-        console.log("ROWS----->>>", rows);
-
         res.send(rows);
       } else console.log(err);
     }
   );
 });
 
-//Router to INSERT/POST a learner's detail
-app.post("/learners", (req, res) => {
-  let learner = req.body;
+//Router to INSERT/POST a client
+app.post("/creacliente", (req, res) => {
+  let client = req.body;
 
-  console.log("LEARNER", req.body);
+  console.log("CLIENT", req.body);
 
   var sql =
-    "SET @learner_id = ?;SET @learner_name = ?;SET @learner_email = ?;SET @course_Id = ?; CALL learnerAddOrEdit(@learner_id,@learner_name,@learner_email,@course_Id);";
-  mysqlConnection.query(
+    "SET @name = ?;SET @last_name = ?;SET @age = ?;SET @date_birth = ?; CALL clientAdd(@name,@last_name,@age,@date_birth);";
+    connection.query(
     sql,
     [
-      learner.learner_id,
-      learner.learner_name,
-      learner.learner_email,
-      learner.course_Id,
+      client.name,
+      client.last_name,
+      client.age,
+      client.date_birth,
     ],
     (err, rows, fields) => {
       if (!err)
-        rows.forEach((element) => {
-          if (element.constructor == Array)
-            res.send("New Learner ID : " + element[0].learner_id);
-        });
+        res.json({response: "ok"});
       else console.log(err);
     }
   );
 });
 
-/*
-const publicPath = path.join(__dirname, 'build');
-
-app.use(express.static(publicPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
-});
-*/
 app.listen(port, () => {
   console.log(`Server is up on port ${port}`);
 });
