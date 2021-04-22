@@ -99,6 +99,10 @@ app.get("/clients", (req, res) => {
 FROM purchase;*/
 
 app.get("/kpideclientes", (req, res) => {
+
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
   connection.query(
     "SELECT AVG(age) AS avg_age, STDDEV(age) AS std_age  FROM client",
     (err, rows, fields) => {
